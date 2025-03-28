@@ -1,0 +1,44 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "_did",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "_publicKey",
+                "type": "string"
+            }
+        ],
+        "name": "registerDID",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "identities",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "did",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "publicKey",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+] 
