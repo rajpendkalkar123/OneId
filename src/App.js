@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Dashboard from './components/Dashboard';
+import DIDRegistration from './components/DIDRegistration';
 import { WalletProvider } from './context/WalletContext';
 import './App.css';
 
@@ -14,6 +15,7 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Hero />} />
+            <Route path="/register" element={<DIDRegistration />} />
             <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>
