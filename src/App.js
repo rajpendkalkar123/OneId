@@ -1,21 +1,23 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { WalletProvider } from './context/WalletContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import Dashboard from './components/Dashboard';
 import DIDRegistration from './components/DIDRegistration';
-import { WalletProvider } from './context/WalletContext';
+import DocumentScanner from './components/DocumentScanner';
+import Dashboard from './components/Dashboard';
 import './App.css';
 
 function App() {
   return (
     <WalletProvider>
       <Router>
-        <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#16213e]">
+        <div className="min-h-screen">
           <Navbar />
           <Routes>
             <Route path="/" element={<Hero />} />
             <Route path="/register" element={<DIDRegistration />} />
+            <Route path="/scan" element={<DocumentScanner />} />
             <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>

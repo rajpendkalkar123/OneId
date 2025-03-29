@@ -26,8 +26,18 @@ const Navbar = () => {
               >
                 Home
               </Link>
-              <a href="#features" className="text-gray-300 hover:text-white text-lg">Features</a>
-              <a href="#support" className="text-gray-300 hover:text-white text-lg">Support</a>
+              <Link 
+                to="/scan" 
+                className={`${location.pathname === '/scan' ? 'text-white' : 'text-gray-300'} hover:text-white text-lg`}
+              >
+                Scan Document
+              </Link>
+              <Link 
+                to="/dashboard" 
+                className={`${location.pathname === '/dashboard' ? 'text-white' : 'text-gray-300'} hover:text-white text-lg`}
+              >
+                Dashboard
+              </Link>
             </div>
           </div>
           <div className="flex items-center space-x-4">
