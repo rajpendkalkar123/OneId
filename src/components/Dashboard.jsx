@@ -17,6 +17,9 @@ const Dashboard = () => {
   const [documents, setDocuments] = useState([]);
   const [showQRCode, setShowQRCode] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showCredentialSelector, setShowCredentialSelector] = useState(false);
+  const [selectedCredentials, setSelectedCredentials] = useState([]);
+  const [availableCredentials, setAvailableCredentials] = useState([]);
 
   useEffect(() => {
     if (!account) {
@@ -93,7 +96,42 @@ const Dashboard = () => {
 
   const handleShowQRCode = (document) => {
     setSelectedDocument(document);
-    setShowQRCode(true);
+    // Set available credentials
+    setAvailableCredentials([
+      { key: 'name', label: 'Full Name', value: document.name },
+      { key: 'aadharNumber', label: 'Aadhar Number', value: document.aadharNumber },
+      { key: 'dateOfBirth', label: 'Date of Birth', value: document.dateOfBirth },
+      { key: 'gender', label: 'Gender', value: document.gender },
+      { key: 'address', label: 'Address', value: document.address },
+      { key: 'createdAt', label: 'Created At', value: new Date(document.createdAt * 1000).toLocaleString() }
+    ]);
+    // Initially select all credentials
+    setSelectedCredentials(availableCredentials.map(cred => cred.key));
+    setShowCredentialSelector(true);
+  };
+
+  const toggleCredential = (key) => {
+    setSelectedCredentials(prev => 
+      prev.includes(key) 
+        ? prev.filter(k => k !== key)
+        : [...prev, key]
+    );
+  };
+
+  const generateQRData = () => {
+    if (!selectedDocument) return '';
+    
+    const selectedData = {};
+    availableCredentials.forEach(cred => {
+      if (selectedCredentials.includes(cred.key)) {
+        selectedData[cred.key] = cred.value;
+      }
+    });
+    
+    return JSON.stringify({
+      identifier: selectedDocument.identifier,
+      ...selectedData
+    });
   };
 
   const formatTimestamp = (timestamp) => {
@@ -196,8 +234,101 @@ const Dashboard = () => {
         </div>
 
         {/* QR Code Modal */}
+        {showCredentialSelector && selectedDocument && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl p-8 max-w-2xl w-full mx-4 border border-gray-700/50 shadow-xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold gradient-text">Select Credentials for QR Code</h2>
+                <button
+                  onClick={() => setShowCredentialSelector(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Document Info */}
+                <div className="p-4 bg-gray-800/50 rounded-xl border border-gray-700/50">
+                  <h3 className="font-medium text-lg text-white">{selectedDocument.name}</h3>
+                  <p className="text-sm text-gray-400 mt-1">Aadhar: {selectedDocument.aadharNumber}</p>
+                </div>
+
+                {/* Credential Selection */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-white">Available Credentials</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {availableCredentials.map((cred) => (
+                      <div
+                        key={cred.key}
+                        className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                          selectedCredentials.includes(cred.key)
+                            ? 'bg-purple-500/20 border-purple-500/50'
+                            : 'bg-gray-800/50 border-gray-700/50 hover:border-purple-500/30'
+                        }`}
+                        onClick={() => toggleCredential(cred.key)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium text-white">{cred.label}</h4>
+                            <p className="text-sm text-gray-400 mt-1">{cred.value}</p>
+                          </div>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            selectedCredentials.includes(cred.key)
+                              ? 'bg-purple-500 border-purple-500'
+                              : 'border-gray-600'
+                          }`}>
+                            {selectedCredentials.includes(cred.key) && (
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* QR Code Preview */}
+                <div className="mt-8 p-6 bg-white rounded-2xl shadow-lg">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">QR Code Preview</h3>
+                  <div className="flex justify-center">
+                    <QRCodeSVG 
+                      value={generateQRData()} 
+                      size={200}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-4 mt-6">
+                  <button
+                    onClick={() => setShowCredentialSelector(false)}
+                    className="px-6 py-2 rounded-lg bg-gray-700/50 text-white hover:bg-gray-700/70 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCredentialSelector(false);
+                      setShowQRCode(true);
+                    }}
+                    className="px-6 py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+                  >
+                    Use Selected Credentials
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Final QR Code Modal */}
         {showQRCode && selectedDocument && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700/50 shadow-xl">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-3xl font-bold gradient-text">Document QR Code</h2>
@@ -210,20 +341,15 @@ const Dashboard = () => {
               </div>
               <div className="space-y-4">
                 <div className="p-4 bg-gray-800/50 rounded-xl border border-gray-700/50">
-                  <h3 className="font-medium text-lg">{selectedDocument.name}</h3>
+                  <h3 className="font-medium text-lg text-white">{selectedDocument.name}</h3>
                   <p className="text-sm text-gray-400 mt-1">Aadhar: {selectedDocument.aadharNumber}</p>
                 </div>
                 <div className="flex justify-center p-6 bg-white rounded-2xl shadow-lg">
                   <QRCodeSVG 
-                    value={JSON.stringify({
-                      identifier: selectedDocument.identifier,
-                      name: selectedDocument.name,
-                      aadharNumber: selectedDocument.aadharNumber,
-                      dateOfBirth: selectedDocument.dateOfBirth,
-                      gender: selectedDocument.gender,
-                      createdAt: selectedDocument.createdAt
-                    })} 
+                    value={generateQRData()} 
                     size={200}
+                    level="H"
+                    includeMargin={true}
                   />
                 </div>
               </div>

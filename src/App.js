@@ -6,6 +6,7 @@ import Hero from './components/Hero';
 import DIDRegistration from './components/DIDRegistration';
 import DocumentScanner from './components/DocumentScanner';
 import Dashboard from './components/Dashboard';
+import QRScanner from './components/QRScanner';
 import './App.css';
 
 function App() {
@@ -16,9 +17,9 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Hero />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/register" element={<DIDRegistration />} />
             <Route path="/scan" element={<DocumentScanner />} />
-            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>
       </Router>

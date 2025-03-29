@@ -26,18 +26,22 @@ const Navbar = () => {
               >
                 Home
               </Link>
-              <Link 
-                to="/scan" 
-                className={`${location.pathname === '/scan' ? 'text-white' : 'text-gray-300'} hover:text-white text-lg`}
-              >
-                Scan Document
-              </Link>
-              <Link 
-                to="/dashboard" 
-                className={`${location.pathname === '/dashboard' ? 'text-white' : 'text-gray-300'} hover:text-white text-lg`}
-              >
-                Dashboard
-              </Link>
+              {account && (
+                <>
+                  <Link 
+                    to="/scan" 
+                    className={`${location.pathname === '/scan' ? 'text-white' : 'text-gray-300'} hover:text-white text-lg`}
+                  >
+                    Scan Document
+                  </Link>
+                  <Link 
+                    to="/dashboard" 
+                    className={`${location.pathname === '/dashboard' ? 'text-white' : 'text-gray-300'} hover:text-white text-lg`}
+                  >
+                    Dashboard
+                  </Link>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center space-x-4">
