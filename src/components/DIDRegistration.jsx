@@ -11,12 +11,12 @@ const DIDRegistration = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [aadharData, setAadharData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
-    aadharNumber: '',
-    dob: '',
+    dateOfBirth: '',
+    gender: '',
     address: '',
-    gender: ''
+    aadharNumber: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [scanning, setScanning] = useState(false);
@@ -129,7 +129,7 @@ const DIDRegistration = () => {
         address: extractSpecificText(cleanedText, /Address\s*:\s*([^\n]+)/i)
       };
 
-      setAadharData(extractedData);
+      setFormData(extractedData);
       setScanProgress(100);
       setScanning(false);
     } catch (err) {
@@ -140,6 +140,14 @@ const DIDRegistration = () => {
     }
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -147,25 +155,40 @@ const DIDRegistration = () => {
     setSuccess('');
 
     try {
+      const contractAddress = process.env.REACT_APP_AADHAR_DID_ADDRESS;
+      if (!contractAddress) {
+        throw new Error('Contract address not found');
+      }
+
       const contract = new ethers.Contract(
-        process.env.REACT_APP_AADHAR_DID_ADDRESS,
+        contractAddress,
         AadharDID.abi,
         signer
       );
 
+      // Create a unique identifier
+      const identifier = `did:aadhar:${account.toLowerCase()}:${Date.now()}`;
+
+      // Call the contract's createAadharDID function
       const tx = await contract.createAadharDID(
-        aadharData.name,
-        aadharData.aadharNumber,
-        aadharData.dob,
-        aadharData.address,
-        aadharData.gender
+        identifier,
+        formData.name,
+        formData.dateOfBirth,
+        formData.gender,
+        formData.address,
+        '', // photoHash (empty for now)
+        formData.aadharNumber
       );
 
+      setSuccess('Processing your registration...');
       await tx.wait();
-      setSuccess('DID registered successfully!');
-      setTimeout(() => navigate('/dashboard'), 2000);
+      
+      setSuccess('DID Registration successful! Redirecting to dashboard...');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
     } catch (err) {
-      console.error('Error registering DID:', err);
+      console.error('Registration error:', err);
       setError(err.message || 'Failed to register DID. Please try again.');
     } finally {
       setLoading(false);
@@ -173,131 +196,121 @@ const DIDRegistration = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a1a] text-white py-12">
+    <div className="min-h-screen bg-[#0a0a1a] text-white pt-24">
       <div className="max-w-2xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-center gradient-text">
-          Register Your DID
-        </h1>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
+        <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/80 rounded-2xl p-8 backdrop-blur-lg border border-gray-700/50 shadow-xl">
+          <h2 className="text-3xl font-bold mb-8 gradient-text">Register Your DID</h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Upload Aadhar Card Image
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Full Name
               </label>
               <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-gray-800/50 border border-gray-700/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white"
                 required
+                placeholder="Enter your full name"
               />
-            </div>
-
-            {imagePreview && (
-              <div className="mt-4">
-                <img
-                  src={imagePreview}
-                  alt="Aadhar Preview"
-                  className="max-w-full h-auto rounded-lg"
-                />
-              </div>
-            )}
-
-            {scanning && (
-              <div className="mt-4">
-                <div className="text-center text-purple-400 mb-2">
-                  Scanning Aadhar card... {scanProgress}%
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2.5">
-                  <div 
-                    className="bg-purple-500 h-2.5 rounded-full transition-all duration-300"
-                    style={{ width: `${scanProgress}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Name</label>
-                <input
-                  type="text"
-                  value={aadharData.name}
-                  onChange={(e) => setAadharData({ ...aadharData, name: e.target.value })}
-                  className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Aadhar Number</label>
-                <input
-                  type="text"
-                  value={aadharData.aadharNumber}
-                  onChange={(e) => setAadharData({ ...aadharData, aadharNumber: e.target.value })}
-                  className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Date of Birth</label>
-                <input
-                  type="text"
-                  value={aadharData.dob}
-                  onChange={(e) => setAadharData({ ...aadharData, dob: e.target.value })}
-                  className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Gender</label>
-                <input
-                  type="text"
-                  value={aadharData.gender}
-                  onChange={(e) => setAadharData({ ...aadharData, gender: e.target.value })}
-                  className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                  required
-                />
-              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Address</label>
-              <textarea
-                value={aadharData.address}
-                onChange={(e) => setAadharData({ ...aadharData, address: e.target.value })}
-                className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                rows="3"
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-gray-800/50 border border-gray-700/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white"
                 required
               />
             </div>
-          </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-gray-800/50 border border-gray-700/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white"
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Address
+              </label>
+              <textarea
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-gray-800/50 border border-gray-700/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white"
+                required
+                rows="3"
+                placeholder="Enter your full address"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Aadhar Number
+              </label>
+              <input
+                type="text"
+                name="aadharNumber"
+                value={formData.aadharNumber}
+                onChange={handleChange}
+                className="w-full p-3 rounded-xl bg-gray-800/50 border border-gray-700/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white"
+                required
+                placeholder="XXXX-XXXX-XXXX"
+                pattern="[0-9]{4}[-]?[0-9]{4}[-]?[0-9]{4}"
+                title="Please enter a valid 12-digit Aadhar number"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-6">
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="px-6 py-3 rounded-xl bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-3 rounded-xl button-gradient text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {loading ? 'Registering...' : 'Register DID'}
+              </button>
+            </div>
+          </form>
 
           {error && (
-            <div className="text-red-500 text-sm">{error}</div>
+            <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400">
+              {error}
+            </div>
           )}
-
+          
           {success && (
-            <div className="text-green-500 text-sm">{success}</div>
+            <div className="mt-4 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-green-400">
+              {success}
+            </div>
           )}
-
-          <div className="flex space-x-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-2 px-4 rounded-lg button-gradient text-white hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {loading ? 'Registering...' : 'Register DID'}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="py-2 px-4 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
