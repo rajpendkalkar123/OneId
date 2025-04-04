@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import AadharDID from '../contracts/AadharDID.json';
 import { QRCodeSVG } from 'qrcode.react';
 import { formatDistanceToNow } from 'date-fns';
+import ZeroKnowledgeProof from './ZeroKnowledgeProof';
 
 const Dashboard = () => {
   const { account, signer } = useWallet();
@@ -20,6 +21,9 @@ const Dashboard = () => {
   const [showCredentialSelector, setShowCredentialSelector] = useState(false);
   const [selectedCredentials, setSelectedCredentials] = useState([]);
   const [availableCredentials, setAvailableCredentials] = useState([]);
+  const [showAgeVerification, setShowAgeVerification] = useState(false);
+  const [ageThreshold, setAgeThreshold] = useState(18);
+  const [ageVerified, setAgeVerified] = useState(false);
 
   useEffect(() => {
     if (!account) {
@@ -96,42 +100,59 @@ const Dashboard = () => {
 
   const handleShowQRCode = (document) => {
     setSelectedDocument(document);
-    // Set available credentials
+    // Set available credentials first
     setAvailableCredentials([
       { key: 'name', label: 'Full Name', value: document.name },
       { key: 'aadharNumber', label: 'Aadhar Number', value: document.aadharNumber },
-      { key: 'dateOfBirth', label: 'Date of Birth', value: document.dateOfBirth },
       { key: 'gender', label: 'Gender', value: document.gender },
       { key: 'address', label: 'Address', value: document.address },
       { key: 'createdAt', label: 'Created At', value: new Date(document.createdAt * 1000).toLocaleString() }
     ]);
-    // Initially select all credentials
-    setSelectedCredentials(availableCredentials.map(cred => cred.key));
+    // Show age verification first
+    setShowAgeVerification(true);
+  };
+
+  const handleAgeVerification = (threshold) => {
+    if (!selectedDocument || !selectedDocument.dateOfBirth) {
+      setError('Document or date of birth not available');
+      return;
+    }
+
+    const dob = new Date(selectedDocument.dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
+    setAgeVerified(age >= threshold);
+    setAgeThreshold(threshold);
+    setShowAgeVerification(false);
+    // After age verification, show credential selector
     setShowCredentialSelector(true);
   };
 
-  const toggleCredential = (key) => {
-    setSelectedCredentials(prev => 
-      prev.includes(key) 
-        ? prev.filter(k => k !== key)
-        : [...prev, key]
-    );
+  const handleCredentialSelection = () => {
+    setShowCredentialSelector(false);
+    setShowQRCode(true);
   };
 
   const generateQRData = () => {
     if (!selectedDocument) return '';
     
-    const selectedData = {};
+    const selectedData = [];
     availableCredentials.forEach(cred => {
       if (selectedCredentials.includes(cred.key)) {
-        selectedData[cred.key] = cred.value;
+        selectedData.push(`${cred.label}: ${cred.value}`);
       }
     });
+
+    // Add age verification result
+    selectedData.push(`Age Verification: ${ageVerified ? 'Verified' : 'Not Verified'} (${ageThreshold}+)`);
     
-    return JSON.stringify({
-      identifier: selectedDocument.identifier,
-      ...selectedData
-    });
+    return `Document ID: ${selectedDocument.identifier}\n${selectedData.join('\n')}`;
   };
 
   const formatTimestamp = (timestamp) => {
@@ -233,107 +254,14 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* QR Code Modal */}
-        {showCredentialSelector && selectedDocument && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl p-8 max-w-2xl w-full mx-4 border border-gray-700/50 shadow-xl">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold gradient-text">Select Credentials for QR Code</h2>
-                <button
-                  onClick={() => setShowCredentialSelector(false)}
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {/* Document Info */}
-                <div className="p-4 bg-gray-800/50 rounded-xl border border-gray-700/50">
-                  <h3 className="font-medium text-lg text-white">{selectedDocument.name}</h3>
-                  <p className="text-sm text-gray-400 mt-1">Aadhar: {selectedDocument.aadharNumber}</p>
-                </div>
-
-                {/* Credential Selection */}
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-white">Available Credentials</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {availableCredentials.map((cred) => (
-                      <div
-                        key={cred.key}
-                        className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                          selectedCredentials.includes(cred.key)
-                            ? 'bg-purple-500/20 border-purple-500/50'
-                            : 'bg-gray-800/50 border-gray-700/50 hover:border-purple-500/30'
-                        }`}
-                        onClick={() => toggleCredential(cred.key)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium text-white">{cred.label}</h4>
-                            <p className="text-sm text-gray-400 mt-1">{cred.value}</p>
-                          </div>
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            selectedCredentials.includes(cred.key)
-                              ? 'bg-purple-500 border-purple-500'
-                              : 'border-gray-600'
-                          }`}>
-                            {selectedCredentials.includes(cred.key) && (
-                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* QR Code Preview */}
-                <div className="mt-8 p-6 bg-white rounded-2xl shadow-lg">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">QR Code Preview</h3>
-                  <div className="flex justify-center">
-                    <QRCodeSVG 
-                      value={generateQRData()} 
-                      size={200}
-                      level="H"
-                      includeMargin={true}
-                    />
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex justify-end space-x-4 mt-6">
-                  <button
-                    onClick={() => setShowCredentialSelector(false)}
-                    className="px-6 py-2 rounded-lg bg-gray-700/50 text-white hover:bg-gray-700/70 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowCredentialSelector(false);
-                      setShowQRCode(true);
-                    }}
-                    className="px-6 py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
-                  >
-                    Use Selected Credentials
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Final QR Code Modal */}
-        {showQRCode && selectedDocument && (
+        {/* Age Verification Modal */}
+        {showAgeVerification && selectedDocument && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700/50 shadow-xl">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold gradient-text">Document QR Code</h2>
+                <h2 className="text-3xl font-bold gradient-text">Age Verification</h2>
                 <button
-                  onClick={() => setShowQRCode(false)}
+                  onClick={() => setShowAgeVerification(false)}
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   ✕
@@ -344,14 +272,97 @@ const Dashboard = () => {
                   <h3 className="font-medium text-lg text-white">{selectedDocument.name}</h3>
                   <p className="text-sm text-gray-400 mt-1">Aadhar: {selectedDocument.aadharNumber}</p>
                 </div>
-                <div className="flex justify-center p-6 bg-white rounded-2xl shadow-lg">
-                  <QRCodeSVG 
-                    value={generateQRData()} 
-                    size={200}
-                    level="H"
-                    includeMargin={true}
+                
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-300">
+                    Enter Age Threshold
+                  </label>
+                  <input
+                    type="number"
+                    min="12"
+                    max="100"
+                    value={ageThreshold}
+                    onChange={(e) => setAgeThreshold(Number(e.target.value))}
+                    className="w-full px-4 py-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
+                  <button
+                    onClick={() => handleAgeVerification(ageThreshold)}
+                    className="w-full px-6 py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+                  >
+                    Verify Age
+                  </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Credential Selector Modal */}
+        {showCredentialSelector && selectedDocument && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700/50 shadow-xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold gradient-text">Select Credentials</h2>
+                <button
+                  onClick={() => setShowCredentialSelector(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-4">
+                {availableCredentials.map((cred) => (
+                  <label key={cred.key} className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedCredentials.includes(cred.key)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCredentials([...selectedCredentials, cred.key]);
+                        } else {
+                          setSelectedCredentials(selectedCredentials.filter(key => key !== cred.key));
+                        }
+                      }}
+                      className="form-checkbox h-5 w-5 text-purple-500 rounded border-gray-600 bg-gray-700/50 focus:ring-purple-500"
+                    />
+                    <span className="text-white">{cred.label}</span>
+                  </label>
+                ))}
+                
+                <button
+                  onClick={handleCredentialSelection}
+                  className="w-full px-6 py-2 mt-6 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+                >
+                  Generate QR Code
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* QR Code Display */}
+        {showQRCode && selectedDocument && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700/50 shadow-xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold gradient-text">QR Code</h2>
+                <button
+                  onClick={() => setShowQRCode(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-4">
+                <QRCodeSVG 
+                  value={generateQRData()} 
+                  size={256}
+                  level="H"
+                  className="mx-auto bg-white p-4 rounded-lg"
+                />
+                <p className="text-center text-sm text-gray-400 mt-4">
+                  Scan this QR code to verify the credentials
+                </p>
               </div>
             </div>
           </div>

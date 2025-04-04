@@ -54,28 +54,33 @@ const QRScanner = () => {
       const success = (decodedText) => {
         try {
           console.log('QR Code scanned:', decodedText);
-          // Parse the decoded text as JSON
-          const parsedData = JSON.parse(decodedText);
-          console.log('Parsed data:', parsedData);
+          // Parse the plain text data
+          const lines = decodedText.split('\n');
+          const data = {
+            identifier: lines[0].replace('Document ID: ', ''),
+            details: lines.slice(1).reduce((acc, line) => {
+              const [key, value] = line.split(': ');
+              // Skip date of birth
+              if (key.toLowerCase() !== 'date of birth') {
+                acc[key] = value;
+              }
+              return acc;
+            }, {}),
+            verificationResult: true, // This would be set based on actual verification
+            attributes: {
+              age: true // This would be set based on the proof
+            }
+          };
+          console.log('Parsed data:', data);
           // Stop the scanner
           scanner.clear();
           // Generate URL and navigate
-          const resultUrl = generateResultUrl(parsedData);
+          const resultUrl = generateResultUrl(data);
           console.log('Navigating to:', resultUrl);
           navigate(resultUrl);
         } catch (error) {
           console.error('Error parsing QR code data:', error);
-          // If it's not valid JSON, try to handle it as a direct DID string
-          if (decodedText.startsWith('did:')) {
-            console.log('Handling as DID string:', decodedText);
-            scanner.clear();
-            const resultUrl = generateResultUrl({ identifier: decodedText });
-            console.log('Navigating to:', resultUrl);
-            navigate(resultUrl);
-          } else {
-            console.error('Invalid QR code format:', decodedText);
-            setError('Invalid QR code format');
-          }
+          setError('Invalid QR code format');
         }
       };
 

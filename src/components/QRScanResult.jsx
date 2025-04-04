@@ -6,34 +6,13 @@ const QRScanResult = ({ data, onClose }) => {
   // Parse the data if it's a string
   const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
 
-  // Extract DID components if present
-  const didComponents = parsedData.identifier?.split(':') || [];
-  const didMethod = didComponents[1];
-  const didAddress = didComponents[2];
-  const didTimestamp = didComponents[3];
-
-  // Format date of birth if present
-  const formatDateOfBirth = (dob) => {
-    if (!dob) return '';
-    try {
-      const date = new Date(dob);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch (e) {
-      return dob;
-    }
-  };
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
       <div className="bg-gray-900/50 rounded-xl p-8 backdrop-blur-lg max-w-md w-full mx-4 shadow-2xl border border-gray-700/50">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            Scan Results
+            Verification Result
           </h2>
           {onClose && (
             <button
@@ -50,52 +29,52 @@ const QRScanResult = ({ data, onClose }) => {
 
         {/* Content */}
         <div className="space-y-4">
-          {/* Name Field */}
-          {parsedData.name && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/30">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Name</label>
-              <div className="text-white text-lg font-medium">{parsedData.name}</div>
-            </div>
-          )}
-
-          {/* Date of Birth Field */}
-          {parsedData.dateOfBirth && (
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/30">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Date of Birth</label>
-              <div className="text-white">{formatDateOfBirth(parsedData.dateOfBirth)}</div>
-            </div>
-          )}
-
-          {/* DID Identifier */}
-          <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/30">
-            <label className="block text-sm font-medium text-gray-400 mb-1">Decentralized Identifier (DID)</label>
-            <div className="space-y-2">
-              <div className="text-blue-400 font-mono break-all">
-                <span className="text-gray-400">Method:</span> {didMethod}
-              </div>
-              <div className="text-blue-400 font-mono break-all">
-                <span className="text-gray-400">Address:</span> {didAddress}
-              </div>
-              <div className="text-blue-400 font-mono break-all">
-                <span className="text-gray-400">Timestamp:</span> {didTimestamp}
-              </div>
+          {/* Verification Status */}
+          <div className={`p-4 rounded-lg ${
+            parsedData.verificationResult 
+              ? 'bg-green-500/20 border-green-500/50' 
+              : 'bg-red-500/20 border-red-500/50'
+          } border`}>
+            <div className="flex items-center space-x-2">
+              {parsedData.verificationResult ? (
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+              <p className={`text-lg font-medium ${
+                parsedData.verificationResult ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {parsedData.verificationResult 
+                  ? 'Verification Successful' 
+                  : 'Verification Failed'}
+              </p>
             </div>
           </div>
 
-          {/* Additional Fields */}
-          {Object.entries(parsedData).map(([key, value]) => {
-            // Skip fields that are already displayed
-            if (['identifier', 'name', 'dateOfBirth'].includes(key)) return null;
-            
-            return (
-              <div key={key} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/30">
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-                </label>
-                <div className="text-white break-all">{value}</div>
+          {/* Verified Attributes */}
+          {parsedData.attributes && (
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/30">
+              <h3 className="text-sm font-medium text-gray-400 mb-2">Verified Attributes</h3>
+              <div className="space-y-2">
+                {Object.entries(parsedData.attributes).map(([key, value]) => (
+                  value && (
+                    <div key={key} className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-sm text-gray-300">
+                        {key === 'age' ? 'Age is over 18' : key}
+                      </span>
+                    </div>
+                  )
+                ))}
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
