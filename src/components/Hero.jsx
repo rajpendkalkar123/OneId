@@ -106,11 +106,6 @@ const Hero = () => {
             <div className="p-6 rounded-xl hero-gradient backdrop-blur-lg">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-purple-500/20">
-                  <img 
-                    src="/images/wallet-connect.png" 
-                    alt="Connect Wallet" 
-                    className="w-8 h-8 object-contain"
-                  />
                 </div>
                 <h3 className="text-xl font-semibold gradient-text">Connect Wallet</h3>
               </div>
