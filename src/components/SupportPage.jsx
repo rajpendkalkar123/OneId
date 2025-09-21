@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useWallet } from '../context/WalletContext';
+import ReactMarkdown from 'react-markdown';
 
 const SupportPage = () => {
   const { account } = useWallet();
@@ -35,7 +36,7 @@ const SupportPage = () => {
     try {
       setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
 
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBaJx7bADtiePWF3Hzwqvh7w5nQG7r5c2Y', {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.REACT_APP_GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +154,28 @@ const SupportPage = () => {
                           : 'bg-gray-700 text-gray-200'
                       }`}
                     >
-                      {message.content}
+                      {message.role === 'assistant' ? (
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                              li: ({ children }) => <li className="text-gray-200">{children}</li>,
+                              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                              em: ({ children }) => <em className="italic text-gray-300">{children}</em>,
+                              code: ({ children }) => <code className="bg-gray-600 px-1 py-0.5 rounded text-sm font-mono">{children}</code>,
+                              h1: ({ children }) => <h1 className="text-lg font-bold text-white mb-2">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-base font-bold text-white mb-2">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-sm font-bold text-white mb-1">{children}</h3>,
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        message.content
+                      )}
                     </div>
                   </div>
                 ))}
