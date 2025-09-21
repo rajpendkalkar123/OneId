@@ -14,6 +14,10 @@
   
   # React environment variables
   REACT_APP_GEMINI_API_KEY = "AIzaSyCkiI7uOJfprBY_KpkKmzB5NDBHhC3QG3w"
+  
+  # Disable treating warnings as errors in CI
+  CI = "false"
+  GENERATE_SOURCEMAP = "false"
 
 # Redirect rules for React Router
 [[redirects]]

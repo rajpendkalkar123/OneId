@@ -5,14 +5,14 @@ import { ethers } from 'ethers';
 import AadharDID from '../contracts/AadharDID.json';
 import { QRCodeSVG } from 'qrcode.react';
 import { formatDistanceToNow } from 'date-fns';
-import ZeroKnowledgeProof from './ZeroKnowledgeProof';
+// import ZeroKnowledgeProof from './ZeroKnowledgeProof';
 
 const Dashboard = () => {
   const { account, signer } = useWallet();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [userDID, setUserDID] = useState('');
+  // const [userDID, setUserDID] = useState('');
   const [userPublicKey, setUserPublicKey] = useState('');
   const [recentActivity, setRecentActivity] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -33,7 +33,7 @@ const Dashboard = () => {
 
     // Generate DID from wallet address
     const did = `did:ethr:${account.toLowerCase()}`;
-    setUserDID(did);
+    // setUserDID(did);
 
     // Generate public key from wallet address
     const addressHash = ethers.keccak256(ethers.toUtf8Bytes(account));
@@ -42,7 +42,7 @@ const Dashboard = () => {
 
     // Load DIDs and recent activity
     loadUserDIDs();
-  }, [account, navigate]);
+  }, [account, navigate, loadUserDIDs]);
 
   const getContract = () => {
     const contractAddress = process.env.REACT_APP_AADHAR_DID_ADDRESS;

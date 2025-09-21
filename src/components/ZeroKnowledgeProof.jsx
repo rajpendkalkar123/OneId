@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useWallet } from '../context/WalletContext';
 
 const ZeroKnowledgeProof = ({ document }) => {
-  const { account } = useWallet();
+  // const { account } = useWallet();
   const [verificationResult, setVerificationResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

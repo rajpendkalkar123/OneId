@@ -18,9 +18,9 @@ const DIDRegistration = () => {
     address: '',
     aadharNumber: ''
   });
-  const [imagePreview, setImagePreview] = useState(null);
-  const [scanning, setScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState(0);
+  // const [imagePreview, setImagePreview] = useState(null);
+  // const [scanning, setScanning] = useState(false);
+  // const [scanProgress, setScanProgress] = useState(0);
 
   useEffect(() => {
     if (!account) {
@@ -79,66 +79,66 @@ const DIDRegistration = () => {
     });
   };
 
-  const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleImageUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+  //   // Create preview
+  //   const reader = new FileReader();
+  //   reader.onloadend = () => {
+  //     setImagePreview(reader.result);
+  //   };
+  //   reader.readAsDataURL(file);
 
-    // Start scanning
-    setScanning(true);
-    setScanProgress(0);
-    setError('');
+  //   // Start scanning
+  //   setScanning(true);
+  //   setScanProgress(0);
+  //   setError('');
 
-    try {
-      // Preprocess the image
-      setScanProgress(20);
-      const processedImageData = await preprocessImage(file);
+  //   try {
+  //     // Preprocess the image
+  //     setScanProgress(20);
+  //     const processedImageData = await preprocessImage(file);
 
-      // Initialize Tesseract worker
-      setScanProgress(40);
-      const worker = await createWorker();
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
+  //     // Initialize Tesseract worker
+  //     setScanProgress(40);
+  //     const worker = await createWorker();
+  //     await worker.loadLanguage('eng');
+  //     await worker.initialize('eng');
 
-      // Set up progress monitoring
-      worker.setProgressHandler(progress => {
-        setScanProgress(40 + Math.floor(progress.progress * 40));
-      });
+  //     // Set up progress monitoring
+  //     worker.setProgressHandler(progress => {
+  //       setScanProgress(40 + Math.floor(progress.progress * 40));
+  //     });
 
-      // Perform OCR
-      setScanProgress(60);
-      const { data: { text } } = await worker.recognize(processedImageData);
-      await worker.terminate();
+  //     // Perform OCR
+  //     setScanProgress(60);
+  //     const { data: { text } } = await worker.recognize(processedImageData);
+  //     await worker.terminate();
 
-      // Clean and extract data
-      setScanProgress(80);
-      const cleanedText = cleanText(text);
+  //     // Clean and extract data
+  //     setScanProgress(80);
+  //     const cleanedText = cleanText(text);
       
-      // Extract specific information
-      const extractedData = {
-        name: extractSpecificText(cleanedText, /([A-Za-z]+(?:\s[A-Za-z]+)+)/g),
-        aadharNumber: extractSpecificText(cleanedText, /\d{4}\s?\d{4}\s?\d{4}/g),
-        dob: extractSpecificText(cleanedText, /\d{2}\/\d{2}\/\d{4}/g),
-        gender: extractSpecificText(cleanedText, /Gender\s*:\s*([MF])/i),
-        address: extractSpecificText(cleanedText, /Address\s*:\s*([^\n]+)/i)
-      };
+  //     // Extract specific information
+  //     const extractedData = {
+  //       name: extractSpecificText(cleanedText, /([A-Za-z]+(?:\s[A-Za-z]+)+)/g),
+  //       aadharNumber: extractSpecificText(cleanedText, /\d{4}\s?\d{4}\s?\d{4}/g),
+  //       dob: extractSpecificText(cleanedText, /\d{2}\/\d{2}\/\d{4}/g),
+  //       gender: extractSpecificText(cleanedText, /Gender\s*:\s*([MF])/i),
+  //       address: extractSpecificText(cleanedText, /Address\s*:\s*([^\n]+)/i)
+  //     };
 
-      setFormData(extractedData);
-      setScanProgress(100);
-      setScanning(false);
-    } catch (err) {
-      console.error('Error scanning image:', err);
-      setError('Failed to scan Aadhar card. Please try again.');
-      setScanning(false);
-      setScanProgress(0);
-    }
-  };
+  //     setFormData(extractedData);
+  //     setScanProgress(100);
+  //     setScanning(false);
+  //   } catch (err) {
+  //     console.error('Error scanning image:', err);
+  //     setError('Failed to scan Aadhar card. Please try again.');
+  //     setScanning(false);
+  //     setScanProgress(0);
+  //   }
+  // };
 
   const handleChange = (e) => {
     const { name, value } = e.target;

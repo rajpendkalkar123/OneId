@@ -8,7 +8,7 @@ import OneID from '../contracts/OneID.json';
 const ScanResultPage = () => {
   const { data } = useParams();
   const navigate = useNavigate();
-  const { account } = useWallet();
+  // const { account } = useWallet();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

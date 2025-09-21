@@ -4,7 +4,7 @@ import { useWallet } from '../context/WalletContext';
 import ReactMarkdown from 'react-markdown';
 
 const SupportPage = () => {
-  const { account } = useWallet();
+  // const { account } = useWallet();
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
