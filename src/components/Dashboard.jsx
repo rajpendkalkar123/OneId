@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { useNavigate } from 'react-router-dom';
 import { ethers } from 'ethers';
@@ -25,40 +25,56 @@ const Dashboard = () => {
   const [ageThreshold, setAgeThreshold] = useState(18);
   const [ageVerified, setAgeVerified] = useState(false);
 
-  useEffect(() => {
-    if (!account) {
-      navigate('/');
-      return;
-    }
-
-    // Generate DID from wallet address
-    const did = `did:ethr:${account.toLowerCase()}`;
-    // setUserDID(did);
-
-    // Generate public key from wallet address
-    const addressHash = ethers.keccak256(ethers.toUtf8Bytes(account));
-    const publicKey = `0x${addressHash.slice(2, 66)}`;
-    setUserPublicKey(publicKey);
-
-    // Load DIDs and recent activity
-    loadUserDIDs();
-  }, [account, navigate, loadUserDIDs]);
-
-  const getContract = () => {
-    const contractAddress = process.env.REACT_APP_AADHAR_DID_ADDRESS;
-    if (!contractAddress) {
-      throw new Error('Contract address not found in environment variables');
-    }
+  const getContract = async () => {
     if (!signer) {
       throw new Error('Signer not available');
     }
-    return new ethers.Contract(contractAddress, AadharDID.abi, signer);
+
+    const provider = signer.provider;
+    let address = process.env.REACT_APP_AADHAR_DID_ADDRESS;
+
+    try {
+      const network = await provider.getNetwork();
+      const chainId = Number(network.chainId);
+
+      // Network-specific address resolution
+      if (chainId === 17000) {
+        // Holesky testnet
+        address = process.env.REACT_APP_AADHAR_DID_ADDRESS_HOLESKY || address;
+      } else if (chainId === 31337 || chainId === 1337) {
+        // Localhost Hardhat
+        address = process.env.REACT_APP_AADHAR_DID_ADDRESS_LOCALHOST || AadharDID.address || address;
+      }
+
+      // Fallback to networks mapping in artifact
+      if (!address && AadharDID.networks && AadharDID.networks[chainId]?.address) {
+        address = AadharDID.networks[chainId].address;
+      }
+
+      if (!address) {
+        throw new Error(`Contract address not configured for chain ${chainId}. Deploy the contract or set REACT_APP_AADHAR_DID_ADDRESS_${chainId === 17000 ? 'HOLESKY' : 'LOCALHOST'} in .env`);
+      }
+      if (!ethers.isAddress(address)) {
+        throw new Error('Invalid contract address configured.');
+      }
+
+      // Verify code exists at the address on the current chain
+      const code = await provider.getCode(address);
+      if (!code || code === '0x') {
+        throw new Error(`No contract found at ${address} on chain ${chainId}. Deploy the contract or set a correct address for this network.`);
+      }
+
+      return new ethers.Contract(address, AadharDID.abi, signer);
+    } catch (e) {
+      // Surface a helpful message
+      throw e;
+    }
   };
 
-  const loadUserDIDs = async () => {
+  const loadUserDIDs = useCallback(async () => {
     try {
       setLoading(true);
-      const contract = getContract();
+      const contract = await getContract();
 
       // Get user's DIDs
       const userDIDs = await contract.getUserDIDs(account);
@@ -92,11 +108,31 @@ const Dashboard = () => {
       setRecentActivity(activity);
     } catch (err) {
       console.error('Error loading DIDs:', err);
-      setError(err.message || 'Failed to load DIDs');
+      setError(`Failed to load your DIDs: ${err.message || err}`);
     } finally {
       setLoading(false);
     }
-  };
+  }, [account, signer]);
+
+  useEffect(() => {
+    if (!account) {
+      navigate('/');
+      return;
+    }
+
+    // Generate DID from wallet address
+    const did = `did:ethr:${account.toLowerCase()}`;
+    // setUserDID(did);
+
+    // Generate public key from wallet address
+    const addressHash = ethers.keccak256(ethers.toUtf8Bytes(account));
+    const publicKey = `0x${addressHash.slice(2, 66)}`;
+    setUserPublicKey(publicKey);
+
+    // Load DIDs and recent activity
+    loadUserDIDs();
+  }, [account, navigate, loadUserDIDs]);
+
 
   const handleShowQRCode = (document) => {
     setSelectedDocument(document);

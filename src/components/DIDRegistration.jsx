@@ -155,16 +155,25 @@ const DIDRegistration = () => {
     setSuccess('');
 
     try {
-      const contractAddress = process.env.REACT_APP_AADHAR_DID_ADDRESS;
-      if (!contractAddress) {
-        throw new Error('Contract address not found');
+      // Resolve contract address: prefer env, then artifact default on localhost, then per-network mapping
+      if (!signer) throw new Error('Wallet not connected');
+      const provider = signer.provider;
+      const network = await provider.getNetwork();
+      const chainId = Number(network.chainId);
+      let address = process.env.REACT_APP_AADHAR_DID_ADDRESS;
+      if (!address) {
+        if (chainId === 31337 || chainId === 1337) {
+          address = AadharDID.address;
+        } else if (AadharDID.networks && AadharDID.networks[chainId]?.address) {
+          address = AadharDID.networks[chainId].address;
+        }
       }
+  if (!address) throw new Error('Contract address not configured for this network');
+  if (!ethers.isAddress(address)) throw new Error('Invalid contract address');
+  const code = await provider.getCode(address);
+  if (!code || code === '0x') throw new Error(`No contract at ${address} on chain ${chainId}. Deploy first or configure address.`);
 
-      const contract = new ethers.Contract(
-        contractAddress,
-        AadharDID.abi,
-        signer
-      );
+  const contract = new ethers.Contract(address, AadharDID.abi, signer);
 
       // Create a unique identifier
       const identifier = `did:aadhar:${account.toLowerCase()}:${Date.now()}`;

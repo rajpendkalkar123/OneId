@@ -7,7 +7,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import QRScanner from './components/QRScanner';
 import ScanResultPage from './components/ScanResultPage';
 
-const contractAddress = "0xYourContractAddress"; // Replace with your deployed contract address
+// IMPORTANT: Replace with your deployed contract address
+const contractAddress = "0xYourContractAddress";
 
 function App() {
   const [account, setAccount] = useState(null);
@@ -18,20 +19,26 @@ function App() {
 
   const checkDID = useCallback(async () => {
     if (!account) return;
-    
+    if (!contractAddress || contractAddress === "0xYourContractAddress") {
+      setError("Contract address is not set. Please update App.jsx with your deployed contract address.");
+      return;
+    }
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(contractAddress, contractABI, provider);
-
       const identity = await contract.identities(account);
       if (identity.did) {
         setDid(identity.did);
         setPublicKey(identity.publicKey);
         setIsRegistered(true);
+      } else {
+        setIsRegistered(false);
+        setDid("");
+        setPublicKey("");
       }
     } catch (error) {
       console.error("Error fetching DID:", error);
-      setError("Failed to fetch DID information");
+      setError("Failed to fetch DID information. Check contract address, ABI, and network.");
     }
   }, [account]);
 

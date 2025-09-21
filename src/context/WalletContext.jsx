@@ -24,28 +24,24 @@ export const WalletProvider = ({ children }) => {
           const signer = await provider.getSigner();
           setSigner(signer);
 
-          // Check if we're on Holesky network
+          // Optionally enforce Holesky; keep localhost (31337/1337) and others working by default
           const network = await provider.getNetwork();
-          if (network.chainId !== 17000) {
+          const chainId = Number(network.chainId);
+          const shouldForceHolesky = false; // set true if you want to always switch
+          if (shouldForceHolesky && chainId !== 17000) {
             try {
-              // Request network switch to Holesky
               await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0x4268' }], // 17000 in hex
+                params: [{ chainId: '0x4268' }],
               });
             } catch (switchError) {
-              // If Holesky network is not added, add it
               if (switchError.code === 4902) {
                 await window.ethereum.request({
                   method: 'wallet_addEthereumChain',
                   params: [{
                     chainId: '0x4268',
                     chainName: 'Holesky Testnet',
-                    nativeCurrency: {
-                      name: 'Holesky ETH',
-                      symbol: 'ETH',
-                      decimals: 18
-                    },
+                    nativeCurrency: { name: 'Holesky ETH', symbol: 'ETH', decimals: 18 },
                     rpcUrls: ['https://ethereum-holesky.publicnode.com'],
                     blockExplorerUrls: ['https://holesky.etherscan.io']
                   }]

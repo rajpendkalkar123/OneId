@@ -59,11 +59,24 @@ const DocumentScanner = () => {
     }
 
     try {
-      const contract = new ethers.Contract(
-        process.env.REACT_APP_AADHAR_DID_ADDRESS,
-        AadharDID.abi,
-        signer
-      );
+      if (!signer) throw new Error('Wallet not connected');
+      const provider = signer.provider;
+      const network = await provider.getNetwork();
+      const chainId = Number(network.chainId);
+      let address = process.env.REACT_APP_AADHAR_DID_ADDRESS;
+      if (!address) {
+        if (chainId === 31337 || chainId === 1337) {
+          address = AadharDID.address;
+        } else if (AadharDID.networks && AadharDID.networks[chainId]?.address) {
+          address = AadharDID.networks[chainId].address;
+        }
+      }
+  if (!address) throw new Error('Contract address not configured for this network');
+  if (!ethers.isAddress(address)) throw new Error('Invalid contract address');
+  const code = await provider.getCode(address);
+  if (!code || code === '0x') throw new Error(`No contract at ${address} on chain ${chainId}. Deploy first or configure address.`);
+
+  const contract = new ethers.Contract(address, AadharDID.abi, signer);
 
       const did = `did:ethr:${account?.toLowerCase()}:${Date.now()}`;
       
@@ -81,7 +94,7 @@ const DocumentScanner = () => {
       setIsSuccess(true);
     } catch (error) {
       console.error('DID creation error:', error);
-      setError('Failed to create DID from document. Please try again.');
+      setError(error.message || 'Failed to create DID from document. Please try again.');
     }
   };
 

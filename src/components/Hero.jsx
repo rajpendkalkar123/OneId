@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
-import blockchainSecurity from './images/blockchain-security.png';
+import SplineIDCard from './SplineIDCard';
 
 const Hero = () => {
   const { connectWallet, account } = useWallet();
@@ -46,17 +46,9 @@ const Hero = () => {
               </div>
             </div>
             <div className="flex justify-center items-center p-4">
-              <div className="w-full max-w-xl">
-                <img 
-                  src={blockchainSecurity}
-                  alt="Blockchain Security Illustration" 
-                  className="w-full h-auto transform hover:scale-105 transition-transform duration-300"
-                  style={{
-                    filter: 'drop-shadow(0 0 10px rgba(78, 132, 238, 0.2))',
-                    maxHeight: '700px',
-                    minWidth: '120%',
-                    objectFit: 'contain'
-                  }}
+              <div className="w-full max-w-xl h-96 md:h-[500px]">
+                <SplineIDCard 
+                  className="w-full h-full transform hover:scale-105 transition-transform duration-300"
                 />
               </div>
             </div>
