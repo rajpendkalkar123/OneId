@@ -1,70 +1,76 @@
-# Getting Started with Create React App
+# OneID – Decentralized Digital Identity 🌐🔐
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+OneID is a **Web3-powered decentralized digital identity (DID) platform** that enables secure, seamless, and privacy-first login across multiple platforms. With OneID, users can authenticate once and use the same DID to access **social media, banking, e-commerce, government services, and third-party apps** — without oversharing sensitive personal data.
 
-## Available Scripts
+<img width="1919" height="994" alt="Screenshot 2025-03-29 115852" src="https://github.com/user-attachments/assets/8b3e3f7b-24da-435d-86f7-53e7c731f8be" />
 
-In the project directory, you can run:
+<img width="1788" height="503" alt="Screenshot 2025-03-29 170136" src="https://github.com/user-attachments/assets/7b2353e5-64b1-45a9-844c-cfc0002111fb" />
 
-### `npm start`
+<img width="887" height="1199" alt="Screenshot 2025-03-29 172745" src="https://github.com/user-attachments/assets/f88a9dee-c87b-4764-b771-e82f48e812db" />
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Features
+- **Universal Login** → One ID for all platforms (social, banking, eGov, etc.)  
+- **Decentralized Identity (DID)** → Blockchain-based tamper-proof identity  
+- **Privacy-Preserving** → Share only required credentials  
+- **Cross-Platform** → Works on Web & Mobile  
+- **Interoperable** → W3C DID standards & third-party service support  
+- **Trust & Transparency** → Eliminates middlemen, reduces fraud  
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🏗️ Tech Stack
+- **Frontend:** Flutter (Web + Mobile)  
+- **Backend:** Node.js (Express.js)  
+- **Database:** Firebase Firestore  
+- **Blockchain:** Ethereum / Polygon (for DID registry)  
+- **Smart Contracts:** Solidity + Hardhat  
+- **Storage:** IPFS / Ceramic (for decentralized docs)  
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📂 Project Structure
+OneID/
+│── frontend/ # Flutter app
+│── backend/ # Node.js API & blockchain integration
+│── smart-contracts/ # Solidity contracts + Hardhat
+│── docs/ # Project docs, diagrams, research
+│── config.ini # Project configuration
+│── README.md # Project overview
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📖 Use Cases
+- 🔑 **SSO Login** – Single ID across platforms  
+- 🏦 **Finance** – Secure KYC & payments  
+- 🎮 **Gaming & Metaverse** – Identity portability  
+- 🏛️ **eGov Services** – Digital citizen identity  
+- 🛒 **E-commerce** – Verified buyer/seller  
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🛡️ Security
+- **User-Owned Keys** – No central authority  
+- **Zero-Knowledge Proofs** – Verify without exposing sensitive data  
+- **End-to-End Encryption** – All communication remains private & secure  
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🤝 Contributing
+We welcome contributions from the community 🚀  
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. Fork the repository  
+2. Create a feature branch (`feature/your-feature`)  
+3. Commit your changes  
+4. Push the branch and open a Pull Request  
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📜 License
+This project is licensed under the **MIT License** – free to use, modify, and distribute.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🌍 Vision
+Our mission is to create a **secure, interoperable, and user-owned digital identity system** that reduces dependency on centralized providers and empowers individuals globally.

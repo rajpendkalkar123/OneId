@@ -3,6 +3,9 @@ import { ethers } from "ethers";
 import DIDCard from "./components/DIDCard";
 import Landing from "./components/Landing";
 import contractABI from "./DIDRegistry.json"; // Import compiled ABI
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import QRScanner from './components/QRScanner';
+import ScanResultPage from './components/ScanResultPage';
 
 const contractAddress = "0xYourContractAddress"; // Replace with your deployed contract address
 
@@ -107,25 +110,33 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <Landing />
-          <DIDCard 
-            account={account}
-            error={error}
-            connectWallet={connectWallet}
-            did={did}
-            setDid={setDid}
-            publicKey={publicKey}
-            setPublicKey={setPublicKey}
-            isRegistered={isRegistered}
-            registerDID={registerDID}
-            loginWithDID={loginWithDID}
-          />
-        </div>
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/scan" element={<QRScanner />} />
+        <Route path="/scan-result" element={<ScanResultPage />} />
+        <Route path="/" element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <Landing />
+                <DIDCard 
+                  account={account}
+                  error={error}
+                  connectWallet={connectWallet}
+                  did={did}
+                  setDid={setDid}
+                  publicKey={publicKey}
+                  setPublicKey={setPublicKey}
+                  isRegistered={isRegistered}
+                  registerDID={registerDID}
+                  loginWithDID={loginWithDID}
+                />
+              </div>
+            </div>
+          </div>
+        } />
+      </Routes>
+    </Router>
   );
 }
 

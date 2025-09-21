@@ -156,10 +156,6 @@ const DocumentScanner = () => {
                   <div className="text-white">{scannedData.name}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Date of Birth</label>
-                  <div className="text-white">{scannedData.dateOfBirth}</div>
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">Gender</label>
                   <div className="text-white">{scannedData.gender}</div>
                 </div>
