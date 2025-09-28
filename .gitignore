@@ -26,3 +26,4 @@ yarn-error.log*
 .env
 .env.local
 .env.eg
+.gitignore
